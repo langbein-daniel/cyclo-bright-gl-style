@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  openmaptiles-tools:
+    image: "openmaptiles/openmaptiles-tools:7.0"
+    volumes:
+      - ./icons:/icons
+      - ./build/:/build

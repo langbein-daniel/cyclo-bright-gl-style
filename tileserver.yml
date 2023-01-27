@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+
+  nginx:
+    image: nginx
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: "localhost"
+      SELF_SIGNED_HOST: "localhost"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+    networks:
+      - proxy
+
+  proxy:
+    container_name: proxy  # Required by proxy-companion to reload this container
+    image: nginxproxy/nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./private/certs:/etc/nginx/certs:ro
+    networks:
+      - proxy
+
+  proxy-companion:
+    image: sebastienheyd/self-signed-proxy-companion
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./private/certs:/etc/nginx/certs:rw
+
+networks:
+  proxy:

@@ -1,2 +1,8 @@
 gl-style-package-spec/
 tiles
+
+/.idea/
+/download/
+/build/
+/public/
+/private/

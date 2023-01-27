@@ -24,10 +24,10 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "https://byvekstavtale.leonard.io/tiles/bicycle//metadata.json"
+      "url": "https://byvekstavtale.leonard.io/tiles/bicycle/v1/metadata.json"
     }
   },
-  "sprite": "https://byvekstavtale.leonard.io/tiles/bicycle//sprite",
+  "sprite": "https://byvekstavtale.leonard.io/tiles/bicycle/v1/sprite",
   "glyphs": "https://byvekstavtale.leonard.io/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
