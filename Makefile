@@ -7,7 +7,7 @@ SHELL := /bin/sh
 USR_GRP := 1000:998
 
 # OSM region to download from geofabrik.de
-# Warning: "europe" Is a quite large region of approx. 30GB!
+# Warning: "europe" is a quite large region of approx. 30GB!
 REGION := europe
 
 
@@ -68,28 +68,27 @@ download/noto-sans.zip:
 
 build/style.json:
 	echo 'bicycle_tiles_version=v1' | j2 --format=env style.jinja.json - -o style.json
-	jq '. | .sources.openmaptiles.url="'$(URL)'/tiles/metadata.json" | .sprite="'$(URL)'/sprites/sprite" | .glyphs="'$(URL)'/glyphs/{fontstack}/{range}.pbf"' style.json > $@
-
+	jq '. | .sources.openmaptiles.url="'$(URL)'/tiles/metadata.json" | .sprite="'$(URL)'/sprites/style" | .glyphs="'$(URL)'/glyphs/{fontstack}/{range}.pbf"' style.json > $@
 
 build/index.html:
 	sed 's/.*center:.*/        center: ['$(CENTER)'],/g' index.html > build/index.html
 
-build/tiles: build/$(EXTRACT_FILE) build/config-openmaptiles.json
+build/tiles: build/$(EXTRACT_FILE) build/config-openmaptiles.json tilemaker/process-openmaptiles.lua
 	tilemaker \
 		$< \
 		--output=$@ \
 		--config=$(word 2,$^) \
-		--process=tilemaker/process-openmaptiles.lua
+		--process=$(word 3,$^)
 
-build/config-openmaptiles.json:
+build/config-openmaptiles.json: tilemaker/config-openmaptiles.json
 	# Change URLs and bounding box.
-	jq '. | .settings.filemetadata.tiles=["'$(URL)'/tiles/{z}/{x}/{y}.pbf"] | .settings.bounding_box=['$(EXTRACT_BBOX)']' tilemaker/config-openmaptiles.json > $@
+	jq '. | .settings.filemetadata.tiles=["'$(URL)'/tiles/{z}/{x}/{y}.pbf"] | .settings.bounding_box=['$(EXTRACT_BBOX)']' $< > $@
 
 build/sprites: $(wildcard icons/**/*)
 	mkdir -p $@
 	sudo docker-compose run --rm openmaptiles-tools bash -c \
-		'spritezero /'$@'/sprite /icons && \
-		 spritezero --retina /'$@'/sprite@2x /icons'
+		'spritezero /'$@'/style /icons && \
+		 spritezero --retina /'$@'/style@2x /icons'
 	sudo chown -R $(USR_GRP) $@
 
 build/$(EXTRACT_FILE): download/$(REGION_FILE)
