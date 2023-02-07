@@ -3,41 +3,62 @@
 A Mapbox GL basemap style showcasing OpenStreetMap data for cyclists.
 It is using the vector tile schema of [OpenMapTiles](https://github.com/openmaptiles/openmaptiles).
 
-## Preview
+![Erlangen, Germany](screenshots/erlangen.png)
 
-![Central Drammen](screenshots/central-drammen.png)
+## Static vector tiles
 
-## Start a local tileserver
-
-Build the style, create vector tiles and start a web-server with a self-signed certificate:
+Build the style, create static vector tiles and start nginx as web server behind a reverse-proxy with a self-signed certificate:
 
 ```shell
-make
+make start-static-tileserver
 ```
 
-Visit https://localhost to see a map with the Cyclo Bright style.
+Visit https://localhost to see a map with the OSM Cyclo Bright style.
 
 Afterwards, the tileserver can be stopped with:
 
 ```shell
-make stop-tileserver
+make stop
+```
+
+## Vector and raster tiles
+
+Build the style, create a single .mbtiles file and start mapbox-gl as server behind a reverse-proxy with a self-signed certificate:
+
+```shell
+make start-tileserver-gl
+```
+
+Visit https://localhost to see the TileServer GL overview page which redirects to raster and vector map previews. The raster tile map is less sharp and does not provide smooth zooming, but it can be viewed on webbrowsers without WebGL support.
+
+![tileserver-gl-overview](screenshots/tileserver-gl-overview.png)
+
+Afterwards, the tileserver can be stopped with:
+
+```shell
+make stop
 ```
 
 ## Edit the Style
 
-### Local installation
+### Local Maputnik installation
 
 Use the [Maputnik CLI](http://openmaptiles.org/docs/style/maputnik/) to edit and develop the style.
-After you've started Maputnik open the editor on `localhost:8000`.
 
 ```
+make style.json
 maputnik --watch --file style.json
 ```
 
-### Docker
+After you've started Maputnik open the editor on http://localhost:8000.
 
-Alternatively, [start Maputnik as docker container](https://github.com/maputnik/editor#usage) and upload [style.json](style.json) from the web interface.
+### Maputnik Docker container
+
+Alternatively, [start Maputnik as Docker container](https://github.com/maputnik/editor#usage) and upload [style.json](style.json) from the web interface.
 
 ```shell
+make style.json
 sudo docker run -it --rm -p 8888:8888 maputnik/editor
 ```
+
+After you've started Maputnik open the editor on http://localhost:8888.

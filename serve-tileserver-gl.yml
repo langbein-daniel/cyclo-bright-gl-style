@@ -1,14 +1,14 @@
 version: "3.9"
 services:
 
-  nginx:
-    image: nginx
+  tileserver-gl:
+    image: maptiler/tileserver-gl
     restart: unless-stopped
     environment:
       VIRTUAL_HOST: "localhost"
       SELF_SIGNED_HOST: "localhost"
     volumes:
-      - ./public:/usr/share/nginx/html:ro
+      - ./data-tileserver-gl:/data:ro
     networks:
       - proxy
 

@@ -1,0 +1,29 @@
+{
+  "options": {
+    "paths": {
+      "root": "/usr/src/app/node_modules/tileserver-gl-styles",
+      "sprites": "/data/sprites",
+      "fonts": "/data/fonts",
+      "styles": "/data",
+      "mbtiles": "/data"
+    },
+    "serveAllFonts": true,
+    "tileMargin": 50
+  },
+  "styles": {
+    "bicycle": {
+      "style": "style.json",
+      "serve_data": true,
+      "tilejson": {
+        "bounds": [
+          10.011636032586688,48.70792025947608,12.223993889052613,50.25793688217101
+        ]
+      }
+    }
+  },
+  "data": {
+    "v3": {
+      "mbtiles": "tiles.mbtiles"
+    }
+  }
+}

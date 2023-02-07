@@ -1,8 +1,7 @@
-gl-style-package-spec/
-tiles
-
 /.idea/
 /download/
 /build/
-/public/
+/data-static/
+/data-tileserver-gl/
 /private/
+/style.json
