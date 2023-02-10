@@ -73,11 +73,11 @@ data-static: build/glyphs build/sprites build/tiles build/style-static.json buil
 
 data-tileserver-gl: build/$(MBTILES) build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json  ## Create directory with data for tileserver-gl.
 	mkdir -p $@
-	$(RSYNC) $<           $@/tiles.mbtiles
-	$(RSYNC) $(word 2,$^) $@/fonts
-	$(RSYNC) $(word 3,$^) $@/sprites
-	$(RSYNC) $(word 4,$^) $@/style.json
-	$(RSYNC) $(word 5,$^) $@/config.json
+	$(RSYNC) $<            $@/tiles.mbtiles
+	$(RSYNC) $(word 2,$^)/ $@/fonts
+	$(RSYNC) $(word 3,$^)/ $@/sprites
+	$(RSYNC) $(word 4,$^)  $@/style.json
+	$(RSYNC) $(word 5,$^)  $@/config.json
 
 #
 # BUILD
