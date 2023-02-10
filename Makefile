@@ -35,9 +35,6 @@ all: help
 # SERVE TILES
 #
 
-.PHONY: stop
-stop: stop-static-tileserver stop-tileserver-gl  ## Stops webserver or tileserver-gl if running.
-
 .PHONY: start-static-tileserver
 start-static-tileserver: serve-static.yml data-static  ## Start a webserver to serve (static) vector tiles.
 	sudo docker-compose -f $< up -d
@@ -59,6 +56,9 @@ follow-log-tileserver-gl: serve-tileserver-gl.yml
 stop-tileserver-gl: serve-tileserver-gl.yml  ## Stop tileserver-gl if running.
 	sudo docker-compose -f $< stop
 	sudo docker-compose -f $< down
+
+.PHONY: stop
+stop: stop-static-tileserver stop-tileserver-gl  ## Stops webserver or tileserver-gl if running.
 
 #
 # COPY DATA
@@ -82,23 +82,6 @@ data-tileserver-gl: build/$(MBTILES) build/glyphs build/sprites build/style-tile
 #
 # BUILD
 #
-
-.PHONY: glyphs
-glyphs: build/glyphs  ## Extract glyphs (fonts).
-
-build/glyphs: download/noto-sans.zip
-	mkdir -p $@
-	unzip $< -d $@
-
-.PHONY: sprites
-sprites: build/sprites  ## Build sprites (rendered icons).
-
-build/sprites: $(wildcard icons/**/*)
-	mkdir -p $@
-	sudo docker-compose run --rm openmaptiles-tools bash -c \
-		'spritezero /'$@'/style /icons && \
-		spritezero --retina /'$@'/style@2x /icons'
-	sudo chown -R $(USR_GRP) $@
 
 .PHONY: tiles
 tiles: build/tiles  ## Build (static) vector tiles.
@@ -134,6 +117,23 @@ build/$(EXTRACT_FILE): download/$(REGION_FILE)
 		--bbox $(EXTRACT_BBOX) \
 		--overwrite \
 		-o $@
+
+.PHONY: sprites
+sprites: build/sprites  ## Build sprites (rendered icons).
+
+build/sprites: $(wildcard icons/**/*)
+	mkdir -p $@
+	sudo docker-compose run --rm openmaptiles-tools bash -c \
+		'spritezero /'$@'/style /icons && \
+		spritezero --retina /'$@'/style@2x /icons'
+	sudo chown -R $(USR_GRP) $@
+
+.PHONY: glyphs
+glyphs: build/glyphs  ## Extract glyphs (fonts).
+
+build/glyphs: download/noto-sans.zip
+	mkdir -p $@
+	unzip $< -d $@
 
 #
 # CONFIGURATION
@@ -171,7 +171,7 @@ build/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
 #
 
 .PHONY: download
-download: download/$(REGION_FILE) download/noto-sans.zip  ## Download glyphs and OSM data.
+download: download/$(REGION_FILE) download/noto-sans.zip  ## Download OSM data and glyphs (fonts).
 
 download/$(REGION_FILE):
 	curl --create-dirs --fail https://download.geofabrik.de/$(REGION)-latest.osm.pbf -o $@
