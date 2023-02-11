@@ -28,7 +28,7 @@ USR_GRP := 1000:998
 SHELL := /bin/sh
 RSYNC := rsync -r --inplace --append-verify --checksum
 
-EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LAT),$(MAX_LAT)
+EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LON),$(MAX_LAT)
 
 # If CENTER is undefined or empty use the arithmetic center of EXTRACT_BBOX
 ifeq ($(CENTER),)
