@@ -39,6 +39,38 @@ Afterwards, the tileserver can be stopped with:
 make stop
 ```
 
+## Configuration
+
+To create the tiles for a different region, one can either adjust the variables at the head of the [Makefile](Makefile) or specify them with the `make` command.
+
+Example for the city Oulu, Finnland:
+
+```shell
+# Vector and raster tiles
+make \
+  NAME=oulu \
+  MIN_LAT=64.71 \
+  MAX_LAT=65.38 \
+  MIN_LON=24.37 \
+  MAX_LON=26.61 \
+  start-tileserver-gl
+```
+
+Visit https://localhost
+
+```shell
+# Static vector tiles
+make \
+  NAME=oulu \
+  MIN_LAT=64.71 \
+  MAX_LAT=65.38 \
+  MIN_LON=24.37 \
+  MAX_LON=26.61 \
+  start-static-tileserver
+```
+
+Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
+
 ## Edit the Style
 
 ### Local Maputnik installation

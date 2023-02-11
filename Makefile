@@ -5,12 +5,12 @@ REGION := europe
 # Name and bounding box of the area that should be extracted from REGION.
 # Important: REGION should completely cover EXTRACT_BBOX so that tiles can be generated for the whole EXTRACT_BBOX area.
 # The VGN is a German transit authority. This bbox covers it's area.
-EXTRACT_NAME := vgn
+NAME := vgn
 
-MIN_LAT := 48.70792025947608
-MAX_LAT := 50.25793688217101
 MIN_LON := 10.011636032586688
 MAX_LON := 12.223993889052613
+MIN_LAT := 48.70792025947608
+MAX_LAT := 50.25793688217101
 
 # Manually specify center of map (lng, lat). Otherwise, the center of the EXTRACT_BBOX is used.
 # CENTER := 11.0264,49.5736
@@ -25,21 +25,19 @@ USR_GRP := 1000:998
 
 #==================================================
 
+VERBOSE := 1
 SHELL := /bin/sh
 RSYNC := rsync -r --inplace --append-verify --checksum
 
+REGION_FILE := $(REGION).osm.pbf
 EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LON),$(MAX_LAT)
 
 # If CENTER is undefined or empty use the arithmetic center of EXTRACT_BBOX
 ifeq ($(CENTER),)
-CENTER_LAT := $(shell echo "0.5 * ($(MIN_LAT)+$(MAX_LAT))" | bc)
 CENTER_LON := $(shell echo "0.5 * ($(MIN_LON)+$(MAX_LON))" | bc)
+CENTER_LAT := $(shell echo "0.5 * ($(MIN_LAT)+$(MAX_LAT))" | bc)
 CENTER := $(CENTER_LON),$(CENTER_LAT)
 endif
-
-REGION_FILE := $(REGION).osm.pbf
-EXTRACT_FILE := $(EXTRACT_NAME).osm.pbf
-MBTILES := $(EXTRACT_NAME).mbtiles
 
 .PHONY: all
 all: help
@@ -49,7 +47,7 @@ all: help
 #
 
 .PHONY: start-static-tileserver
-start-static-tileserver: serve-static.yml data-static  ## Start a webserver to serve (static) vector tiles.
+start-static-tileserver: serve-static.yml stop data-static  ## Start a webserver to serve (static) vector tiles.
 	sudo docker-compose -f $< up -d
 
 .PHONY: stop-static-tileserver
@@ -58,7 +56,7 @@ stop-static-tileserver: serve-static.yml  ## Stop webserver if running.
 	sudo docker-compose -f $< down
 
 .PHONY: start-tileserver-gl
-start-tileserver-gl: serve-tileserver-gl.yml data-tileserver-gl  ## Start tileserver-gl to serve vector and raster tiles.
+start-tileserver-gl: serve-tileserver-gl.yml stop data-tileserver-gl  ## Start tileserver-gl to serve vector and raster tiles.
 	sudo docker-compose -f $< up -d
 
 .PHONY: follow-log-tileserver-gl
@@ -71,7 +69,12 @@ stop-tileserver-gl: serve-tileserver-gl.yml  ## Stop tileserver-gl if running.
 	sudo docker-compose -f $< down
 
 .PHONY: stop
-stop: stop-static-tileserver stop-tileserver-gl  ## Stops webserver or tileserver-gl if running.
+stop:  ## Stops webserver or tileserver-gl if running.
+	# Stopping the static tileserver fails if
+	# it tileserver-gl is running.
+	# Therefore, we ignore the first error and continue trying to stop tileserver-gl.
+	 $(MAKE) stop-static-tileserver || :
+	 $(MAKE) stop-tileserver-gl
 
 #
 # COPY DATA
@@ -80,11 +83,11 @@ stop: stop-static-tileserver stop-tileserver-gl  ## Stops webserver or tileserve
 .PHONY: data
 data: data-static data-tileserver-gl  # Create directories to serve with both webserver and tileserver-gl.
 
-data-static: build/glyphs build/sprites build/tiles build/style-static.json build/index.html  ## Create directory with (static) data for a webserver.
+data-static: build/glyphs build/sprites build/$(NAME)/tiles build/style-static.json build/$(NAME)/index.html  ## Create directory with (static) data for a webserver.
 	mkdir -p $@
 	$(RSYNC) $^ $@
 
-data-tileserver-gl: build/$(MBTILES) build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json  ## Create directory with data for tileserver-gl.
+data-tileserver-gl: build/$(NAME)/tiles.mbtiles build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json  ## Create directory with data for tileserver-gl.
 	mkdir -p $@
 	$(RSYNC) $<            $@/tiles.mbtiles
 	$(RSYNC) $(word 2,$^)/ $@/fonts
@@ -97,9 +100,9 @@ data-tileserver-gl: build/$(MBTILES) build/glyphs build/sprites build/style-tile
 #
 
 .PHONY: tiles
-tiles: build/tiles  ## Build (static) vector tiles.
+tiles: build/$(NAME)/tiles  ## Build (static) vector tiles.
 
-build/tiles: build/$(EXTRACT_FILE) build/config-static.json tilemaker/process-openmaptiles.lua
+build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.json tilemaker/process-openmaptiles.lua
 	tilemaker \
 		$< \
 		--output=$@ \
@@ -107,13 +110,13 @@ build/tiles: build/$(EXTRACT_FILE) build/config-static.json tilemaker/process-op
 		--process=$(word 3,$^)
 
 .PHONY: mbtiles
-mbtiles: build/$(MBTILES)  ## Build vector tile file (.mbtiles).
+mbtiles: build/$(NAME)/tiles.mbtiles  ## Build vector tile file (.mbtiles).
 
 # Create a single .mbtiles file
 # - https://github.com/systemed/tilemaker#out-of-the-box-setup
 # - https://github.com/stadtnavi/digitransit-ansible/blob/32d250beeb6c29370ef022ab21a7924dd62ba5e1/roles/tilemaker/templates/build-mbtiles#L62
-build/$(MBTILES): build/$(EXTRACT_FILE) build/config-tileserver-gl.json
-	mkdir -p build
+build/$(NAME)/tiles.mbtiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-tileserver-gl.json
+	mkdir -p build/$(NAME)
 	tilemaker \
 		$< \
 		--output=$@ \
@@ -121,10 +124,10 @@ build/$(MBTILES): build/$(EXTRACT_FILE) build/config-tileserver-gl.json
 		--process=tilemaker/process-openmaptiles.lua
 
 .PHONY: extract
-extract: build/$(EXTRACT_FILE)  ## Extract region from OSM data.
+extract: build/$(NAME)/extract.osm.pbf  ## Extract region from OSM data.
 
-build/$(EXTRACT_FILE): download/$(REGION_FILE)
-	mkdir -p build
+build/$(NAME)/extract.osm.pbf: download/$(REGION_FILE)
+	mkdir -p build/$(NAME)
 	osmium extract \
 		download/$(REGION_FILE) \
 		--bbox $(EXTRACT_BBOX) \
@@ -152,8 +155,8 @@ build/glyphs: download/noto-sans.zip
 # CONFIGURATION
 #
 
-build/index.html: index.html
-	mkdir -p build
+build/$(NAME)/index.html: index.html
+	mkdir -p build/$(NAME)
 	sed 's/.*center:.*/        center: ['$(CENTER)'],/g' $< > $@
 
 build/style-static.json: style.json
@@ -169,13 +172,14 @@ build/style-tileserver-gl.json: style.json
 style.json: style.jinja.json
 	echo 'bicycle_tiles_version=v1' | j2 --format=env $< - -o $@
 
-build/config-static.json: tilemaker/config-openmaptiles.json
+build/$(NAME)/config-static.json: tilemaker/config-openmaptiles.json
+	mkdir -p build/$(NAME)
 	# Change tile URL and bounding box.
 	jq '. | .settings.filemetadata.tiles=["'$(URL)'/tiles/{z}/{x}/{y}.pbf"] | .settings.bounding_box=['$(EXTRACT_BBOX)']' $< > $@
 
 # https://github.com/stadtnavi/digitransit-ansible/blob/master/roles/tilemaker/templates/config-openmaptiles.json
-build/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
-	mkdir -p build
+build/$(NAME)/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
+	mkdir -p build/$(NAME)
 	# Change bounding box and compress; remove tile URL.
 	jq '. | .settings.bounding_box=['$(EXTRACT_BBOX)'] | .settings.compress="gzip" | del(.settings.filemetadata.tiles)' $< > $@
 
@@ -199,13 +203,28 @@ download/noto-sans.zip:
 #
 
 .PHONY: clean
-clean:  ## Remove built/rendered files. This excludes downloaded files.
-	sudo rm -rf private
-	rm -rf data-static data-tileserver-gl build style.json
+clean:  ## Remove built/rendered files. This excludes downloaded files and OSM extracts.
+	if [ -d private ]; then \
+		sudo rm -rf private ; \
+	fi
+
+	rm -rf data-static data-tileserver-gl style.json build/glyphs build/sprites
+
+	# https://unix.stackexchange.com/a/389706
+	# The command needs to be terminated with a ; for find to know where it ends
+	# (as there may be further options afterwards).
+	# To protect the ; from the shell, it needs to be quoted as \;
+	if [ -d build ]; then \
+  		find build -type f ! -regex '.*/.*\.osm\.pbf' -exec rm {} \; ; \
+	fi
+
+.PHONY: clean-extract
+clean-extract: clean  ## Remove all built/rendered files. This excludes downloaded files.
+	rm -rf build
 
 .PHONY: clean-all
-clean-all: clean  ## Remove all built/rendered/downloaded files.
-	rm -r download
+clean-all: clean-extract  ## Remove all built/rendered/downloaded files.
+	rm -rf download
 
 .PHONY: help
 help:
