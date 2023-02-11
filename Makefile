@@ -1,7 +1,3 @@
-# <username-or-UID>:<groupname-or-GID>
-# Used to chown files modified by docker.
-USR_GRP := 1000:998
-
 # OSM region to download from geofabrik.de
 # Warning: "europe" is a quite large region of approx. 30GB!
 REGION := europe
@@ -10,19 +6,36 @@ REGION := europe
 # Important: REGION should completely cover EXTRACT_BBOX so that tiles can be generated for the whole EXTRACT_BBOX area.
 # The VGN is a German transit authority. This bbox covers it's area.
 EXTRACT_NAME := vgn
-EXTRACT_BBOX := 10.011636032586688,48.70792025947608,12.223993889052613,50.25793688217101
 
-# Initial center of map (lng, lat)
-# The center is placed approximately at the Technical Faculty of the University of Erlangen–Nuremberg.
-CENTER := 11.0264,49.5736
+MIN_LAT := 48.70792025947608
+MAX_LAT := 50.25793688217101
+MIN_LON := 10.011636032586688
+MAX_LON := 12.223993889052613
+
+# Manually specify center of map (lng, lat). Otherwise, the center of the EXTRACT_BBOX is used.
+# CENTER := 11.0264,49.5736
+CENTER :=
 
 # URL of tile server
 URL := https://localhost
+
+# <username-or-UID>:<groupname-or-GID>
+# Used to chown files modified by docker.
+USR_GRP := 1000:998
 
 #==================================================
 
 SHELL := /bin/sh
 RSYNC := rsync -r --inplace --append-verify --checksum
+
+EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LAT),$(MAX_LAT)
+
+# If CENTER is undefined or empty use the arithmetic center of EXTRACT_BBOX
+ifeq ($(CENTER),)
+CENTER_LAT := $(shell echo "0.5 * ($(MIN_LAT)+$(MAX_LAT))" | bc)
+CENTER_LON := $(shell echo "0.5 * ($(MIN_LON)+$(MAX_LON))" | bc)
+CENTER := $(CENTER_LON),$(CENTER_LAT)
+endif
 
 REGION_FILE := $(REGION).osm.pbf
 EXTRACT_FILE := $(EXTRACT_NAME).osm.pbf
