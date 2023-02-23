@@ -48,25 +48,25 @@ all: help
 
 .PHONY: start-static-tileserver
 start-static-tileserver: serve-static.yml stop data-static  ## Start a webserver that serves (static) vector tiles.
-	sudo docker-compose -f $< up -d
+	sudo docker compose -f $< up -d
 
 .PHONY: stop-static-tileserver
 stop-static-tileserver: serve-static.yml  ## Stop running webserver.
-	sudo docker-compose -f $< stop
-	sudo docker-compose -f $< down
+	sudo docker compose -f $< stop
+	sudo docker compose -f $< down
 
 .PHONY: start-tileserver-gl
 start-tileserver-gl: serve-tileserver-gl.yml stop data-tileserver-gl  ## Start tileserver-gl which serves vector and raster tiles.
-	sudo docker-compose -f $< up -d
+	sudo docker compose -f $< up -d
 
 .PHONY: follow-log-tileserver-gl
 follow-log-tileserver-gl: serve-tileserver-gl.yml
-	sudo docker-compose -f $< logs --follow tileserver-gl
+	sudo docker compose -f $< logs --follow tileserver-gl
 
 .PHONY: stop-tileserver-gl
 stop-tileserver-gl: serve-tileserver-gl.yml  ## Stop running tileserver-gl.
-	sudo docker-compose -f $< stop
-	sudo docker-compose -f $< down
+	sudo docker compose -f $< stop
+	sudo docker compose -f $< down
 
 .PHONY: stop
 stop:  ## Stop running webserver or tileserver-gl.
@@ -155,7 +155,7 @@ sprites: build/sprites  ## Build sprites (rendered icons).
 
 build/sprites: $(wildcard icons/**/*)
 	mkdir -p $@
-	sudo docker-compose run --rm openmaptiles-tools bash -c \
+	sudo docker compose run --rm openmaptiles-tools bash -c \
 		'spritezero /'$@'/style /icons && \
 		spritezero --retina /'$@'/style@2x /icons'
 	sudo chown -R $(USR_GRP) $@
