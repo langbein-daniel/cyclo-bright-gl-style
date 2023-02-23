@@ -170,7 +170,7 @@ build/style-tileserver-gl.json: style.json
 	jq '. | .sources.openmaptiles.url="mbtiles://{v3}" | .sprite="{style}" | .glyphs="{fontstack}/{range}.pbf"' $< > $@
 
 style.json: style.jinja.json
-	echo 'bicycle_tiles_version=v1' | j2 --format=env $< - -o $@
+	j2 $< -o $@
 
 build/$(NAME)/config-static.json: tilemaker/config-openmaptiles.json
 	mkdir -p build/$(NAME)

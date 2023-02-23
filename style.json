@@ -2150,9 +2150,9 @@
         "text-halo-width": 1
       }
     },
-    {% for type in ["lockers", "shed", "covered"] %}
+    
     {
-      "id": "poi-bicycle-parking-{{ type }}",
+      "id": "poi-bicycle-parking-lockers",
       "type": "symbol",
       "source": "openmaptiles",
       "source-layer": "poi",
@@ -2161,11 +2161,11 @@
         "all",
         ["==", "$type", "Point"],
         ["==", "subclass", "bicycle_parking"],
-        ["==", "type", "{{ type }}"],
+        ["==", "type", "lockers"],
         ["any", ["!has", "level"], ["==", "level", 0]]
       ],
       "layout": {
-        "icon-image": "bicycle_parking_{{ type }}_11",
+        "icon-image": "bicycle_parking_lockers_11",
         "text-anchor": "top",
         "text-field": "{name:latin}\n{name:nonlatin}",
         "text-font": ["Noto Sans Regular"],
@@ -2181,7 +2181,69 @@
         "text-halo-width": 1
       }
     },
-    {% endfor %}
+    
+    {
+      "id": "poi-bicycle-parking-shed",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "poi",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        ["==", "$type", "Point"],
+        ["==", "subclass", "bicycle_parking"],
+        ["==", "type", "shed"],
+        ["any", ["!has", "level"], ["==", "level", 0]]
+      ],
+      "layout": {
+        "icon-image": "bicycle_parking_shed_11",
+        "text-anchor": "top",
+        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-font": ["Noto Sans Regular"],
+        "text-max-width": 9,
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": "#666",
+        "text-halo-blur": 0.5,
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1
+      }
+    },
+    
+    {
+      "id": "poi-bicycle-parking-covered",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "poi",
+      "minzoom": 15,
+      "filter": [
+        "all",
+        ["==", "$type", "Point"],
+        ["==", "subclass", "bicycle_parking"],
+        ["==", "type", "covered"],
+        ["any", ["!has", "level"], ["==", "level", 0]]
+      ],
+      "layout": {
+        "icon-image": "bicycle_parking_covered_11",
+        "text-anchor": "top",
+        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-font": ["Noto Sans Regular"],
+        "text-max-width": 9,
+        "text-offset": [0, 0.6],
+        "text-padding": 2,
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": "#666",
+        "text-halo-blur": 0.5,
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1
+      }
+    },
+    
     {
       "id": "poi-bicycle-repair-station",
       "type": "symbol",
