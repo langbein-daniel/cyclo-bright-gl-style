@@ -9,6 +9,8 @@ services:
       SELF_SIGNED_HOST: "localhost"
     volumes:
       - ./data-tileserver-gl:/data:ro
+#    ports:
+#      - '7070:8080/tcp'
     networks:
       - proxy
 
