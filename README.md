@@ -41,7 +41,7 @@ make stop
 
 ## Configuration
 
-To create the tiles for a different region, one can either adjust the variables at the head of the [Makefile](Makefile) or specify them with the `make` command.
+To create the tiles for a different region, one can either adjust the variables at the head of the [Makefile](Makefile) or override them as shown in the following.
 
 Example for the city Oulu, Finnland:
 
@@ -49,6 +49,7 @@ Example for the city Oulu, Finnland:
 # Vector and raster tiles
 make \
   NAME=oulu \
+  REGION=europe/finland \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
   MIN_LAT=64.71 \
@@ -62,6 +63,7 @@ Visit https://localhost
 # Static vector tiles
 make \
   NAME=oulu \
+  REGION=europe/finland \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
   MIN_LAT=64.71 \
