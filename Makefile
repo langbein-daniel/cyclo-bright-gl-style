@@ -27,7 +27,7 @@ USR_GRP := 1000:998
 
 VERBOSE := 1
 SHELL := /bin/sh
-RSYNC := rsync -r --inplace --append-verify --checksum
+CP := cp --recursive
 
 REGION_FILE := $(REGION).osm.pbf
 EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LON),$(MAX_LAT)
@@ -81,19 +81,35 @@ stop:  ## Stops webserver or tileserver-gl if running.
 #
 
 .PHONY: data
-data: data-static data-tileserver-gl  # Create directories to serve with both webserver and tileserver-gl.
+data: data-static data-tileserver-gl  ## Create directories to serve with both webserver and tileserver-gl.
 
-data-static: build/glyphs build/sprites build/$(NAME)/tiles build/style-static.json build/$(NAME)/index.html  ## Create directory with (static) data for a webserver.
-	mkdir -p $@
-	$(RSYNC) $^ $@
+.PHONY: data-static
+data-static: data-static/.data-$(NAME)  ## Create directory with (static) data for a webserver.
 
-data-tileserver-gl: build/$(NAME)/tiles.mbtiles build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json  ## Create directory with data for tileserver-gl.
-	mkdir -p $@
-	$(RSYNC) $<            $@/tiles.mbtiles
-	$(RSYNC) $(word 2,$^)/ $@/fonts
-	$(RSYNC) $(word 3,$^)/ $@/sprites
-	$(RSYNC) $(word 4,$^)  $@/style.json
-	$(RSYNC) $(word 5,$^)  $@/config.json
+data-static/.data-$(NAME): build/glyphs build/sprites build/$(NAME)/tiles build/style-static.json build/$(NAME)/index.html
+	# Cleanup: The target-dir might contain data from a different $(NAME).
+	rm -rf $(@D)
+	# Copy data.
+	mkdir -p $(@D)
+	$(CP) $^ $(@D)
+	# Marker that indicates that the target-dir contains data from $(NAME)
+	touch $< $@
+
+.PHONY: data-tileserver-gl
+data-tileserver-gl: data-tileserver-gl/.data-$(NAME)  ## Create directory with data for tileserver-gl.
+
+data-tileserver-gl/.data-$(NAME): build/$(NAME)/tiles.mbtiles build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json
+	# Cleanup: The target-dir might contain data from a different $(NAME).
+	rm -rf $(@D)
+	# Copy data.
+	mkdir -p $(@D)
+	$(CP) $<            $(@D)/tiles.mbtiles
+	$(CP) $(word 2,$^)/ $(@D)/fonts
+	$(CP) $(word 3,$^)/ $(@D)/sprites
+	$(CP) $(word 4,$^)  $(@D)/style.json
+	$(CP) $(word 5,$^)  $(@D)/config.json
+	# Marker that indicates that the target-dir contains data from $(NAME)
+	touch $@
 
 #
 # BUILD
