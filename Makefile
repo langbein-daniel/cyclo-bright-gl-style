@@ -47,16 +47,16 @@ all: help
 #
 
 .PHONY: start-static-tileserver
-start-static-tileserver: serve-static.yml stop data-static  ## Start a webserver to serve (static) vector tiles.
+start-static-tileserver: serve-static.yml stop data-static  ## Start a webserver that serves (static) vector tiles.
 	sudo docker-compose -f $< up -d
 
 .PHONY: stop-static-tileserver
-stop-static-tileserver: serve-static.yml  ## Stop webserver if running.
+stop-static-tileserver: serve-static.yml  ## Stop running webserver.
 	sudo docker-compose -f $< stop
 	sudo docker-compose -f $< down
 
 .PHONY: start-tileserver-gl
-start-tileserver-gl: serve-tileserver-gl.yml stop data-tileserver-gl  ## Start tileserver-gl to serve vector and raster tiles.
+start-tileserver-gl: serve-tileserver-gl.yml stop data-tileserver-gl  ## Start tileserver-gl which serves vector and raster tiles.
 	sudo docker-compose -f $< up -d
 
 .PHONY: follow-log-tileserver-gl
@@ -64,12 +64,12 @@ follow-log-tileserver-gl: serve-tileserver-gl.yml
 	sudo docker-compose -f $< logs --follow tileserver-gl
 
 .PHONY: stop-tileserver-gl
-stop-tileserver-gl: serve-tileserver-gl.yml  ## Stop tileserver-gl if running.
+stop-tileserver-gl: serve-tileserver-gl.yml  ## Stop running tileserver-gl.
 	sudo docker-compose -f $< stop
 	sudo docker-compose -f $< down
 
 .PHONY: stop
-stop:  ## Stops webserver or tileserver-gl if running.
+stop:  ## Stop running webserver or tileserver-gl.
 	# Stopping the static tileserver fails if
 	# it tileserver-gl is running.
 	# Therefore, we ignore the first error and continue trying to stop tileserver-gl.
@@ -81,10 +81,10 @@ stop:  ## Stops webserver or tileserver-gl if running.
 #
 
 .PHONY: data
-data: data-static data-tileserver-gl  ## Create directories to serve with both webserver and tileserver-gl.
+data: data-static data-tileserver-gl  ## Create data for both, a webserver and tileserver-gl.
 
 .PHONY: data-static
-data-static: data-static/.data-$(NAME)  ## Create directory with (static) data for a webserver.
+data-static: data-static/.data-$(NAME)  ## Create (static) data for a webserver.
 
 data-static/.data-$(NAME): build/glyphs build/sprites build/$(NAME)/tiles build/style-static.json build/$(NAME)/index.html
 	# Cleanup: The target-dir might contain data from a different $(NAME).
@@ -96,7 +96,7 @@ data-static/.data-$(NAME): build/glyphs build/sprites build/$(NAME)/tiles build/
 	touch $< $@
 
 .PHONY: data-tileserver-gl
-data-tileserver-gl: data-tileserver-gl/.data-$(NAME)  ## Create directory with data for tileserver-gl.
+data-tileserver-gl: data-tileserver-gl/.data-$(NAME)  ## Create data for tileserver-gl.
 
 data-tileserver-gl/.data-$(NAME): build/$(NAME)/tiles.mbtiles build/glyphs build/sprites build/style-tileserver-gl.json maptiler.json
 	# Cleanup: The target-dir might contain data from a different $(NAME).
@@ -218,13 +218,13 @@ download/noto-sans.zip:
 # CLEANUP
 #
 
-.PHONY: clean
-clean:  ## Remove built/rendered files. This excludes downloaded files and OSM extracts.
+.PHONY: clean-build
+clean-build:  ## Remove built/rendered files but keep OSM extracts. This excludes downloaded files and web-/tileserver data.
 	if [ -d private ]; then \
 		sudo rm -rf private ; \
 	fi
 
-	rm -rf data-static data-tileserver-gl style.json build/glyphs build/sprites
+	rm -rf style.json build/glyphs build/sprites
 
 	# https://unix.stackexchange.com/a/389706
 	# The command needs to be terminated with a ; for find to know where it ends
@@ -235,12 +235,22 @@ clean:  ## Remove built/rendered files. This excludes downloaded files and OSM e
 	fi
 
 .PHONY: clean-extract
-clean-extract: clean  ## Remove all built/rendered files. This excludes downloaded files.
+clean-extract: clean-build  ## Remove built/rendered files. This excludes downloaded files and web-/tileserver data.
 	rm -rf build
 
-.PHONY: clean-all
-clean-all: clean-extract  ## Remove all built/rendered/downloaded files.
+.PHONY: clean-data
+clean-data:  ## Remove web-/tileserver data.
+	rm -rf data-static data-tileserver-gl
+
+.PHONY: clean-download
+clean-download: ## Remove downloaded files.
 	rm -rf download
+
+.PHONY: clean
+clean: clean-extract clean-download  ## Remove built/rendered/downloaded files. This excludes web-/tileserver data.
+
+.PHONY: clean-all
+clean-all: clean clean-data  ## Remove built/rendered/downloaded files and web-/tileserver data.
 
 .PHONY: help
 help:
