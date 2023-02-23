@@ -49,10 +49,10 @@ Example for the city Oulu, Finnland:
 # Vector and raster tiles
 make \
   NAME=oulu \
-  MIN_LAT=64.71 \
-  MAX_LAT=65.38 \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
+  MIN_LAT=64.71 \
+  MAX_LAT=65.38 \
   start-tileserver-gl
 ```
 
@@ -62,10 +62,10 @@ Visit https://localhost
 # Static vector tiles
 make \
   NAME=oulu \
-  MIN_LAT=64.71 \
-  MAX_LAT=65.38 \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
+  MIN_LAT=64.71 \
+  MAX_LAT=65.38 \
   start-static-tileserver
 ```
 
