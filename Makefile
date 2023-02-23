@@ -165,7 +165,7 @@ glyphs: build/glyphs  ## Extract glyphs (fonts).
 
 build/glyphs: download/noto-sans.zip
 	mkdir -p $@
-	unzip $< -d $@
+	unzip -q $< -d $@
 
 #
 # CONFIGURATION
