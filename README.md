@@ -49,7 +49,7 @@ Example for the city Oulu, Finnland:
 # Vector and raster tiles
 make \
   NAME=oulu \
-  REGION=europe/finland \
+  REGION_URL='https://download.geofabrik.de/europe/finland-latest.osm.pbf' \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
   MIN_LAT=64.71 \
@@ -63,7 +63,7 @@ Visit https://localhost
 # Static vector tiles
 make \
   NAME=oulu \
-  REGION=europe/finland \
+  REGION_URL='https://download.geofabrik.de/europe/finland-latest.osm.pbf' \
   MIN_LON=24.37 \
   MAX_LON=26.61 \
   MIN_LAT=64.71 \

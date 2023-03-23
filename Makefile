@@ -1,12 +1,11 @@
 # OSM region to download from geofabrik.de
-# Warning: "europe" is a quite large region of approx. 30GB!
-REGION := europe
+REGION_URL := https://download.geofabrik.de/europe/germany-latest.osm.pbf
 
 # Name and bounding box of the area that should be extracted from REGION.
 # Important: REGION should completely cover EXTRACT_BBOX so that tiles can be generated for the whole EXTRACT_BBOX area.
-# The VGN is a German transit authority. This bbox covers it's area.
+# The VGN is a German transit authority.
 NAME := vgn
-
+# This bbox covers (almost) the full area of the VGN.
 MIN_LON := 10.011636032586688
 MAX_LON := 12.223993889052613
 MIN_LAT := 48.70792025947608
@@ -29,7 +28,7 @@ VERBOSE := 1
 SHELL := /bin/sh
 CP := cp --recursive
 
-REGION_FILE := $(REGION).osm.pbf
+REGION_FILE := $(shell basename "$(REGION_URL)")
 EXTRACT_BBOX := $(MIN_LON),$(MIN_LAT),$(MAX_LON),$(MAX_LAT)
 
 # If CENTER is undefined or empty use the arithmetic center of EXTRACT_BBOX
@@ -207,7 +206,7 @@ build/$(NAME)/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
 download: download/$(REGION_FILE) download/noto-sans.zip  ## Download OSM data and glyphs (fonts).
 
 download/$(REGION_FILE):
-	curl --create-dirs --fail https://download.geofabrik.de/$(REGION)-latest.osm.pbf -o $@
+	curl --create-dirs --fail "$(REGION_URL)" -o $@
 
 download/noto-sans.zip:
 	# Archive containing the following directories:
