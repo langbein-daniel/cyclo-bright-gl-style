@@ -117,12 +117,24 @@ data-tileserver-gl/.data-$(NAME): build/$(NAME)/tiles.mbtiles build/glyphs build
 .PHONY: tiles
 tiles: build/$(NAME)/tiles  ## Build (static) vector tiles.
 
-build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.json tilemaker/process-openmaptiles.lua
+build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.json tilemaker/process-openmaptiles.lua build/coastline
+	# There is no commandline option to specify
+	# the path of `water_polygons.shp`.
+	# `tilemaker` searches for this file in the current
+	# working directory at `coastline/water_polygons.shp`.
+	# See https://github.com/systemed/tilemaker#out-of-the-box-setup
+	#
+	# Therefore, we create a symlink from coastline to build/coastline
+	# and remove it afterwards again.
+	ln -f -s $(word 4,$^) coastline
+
 	tilemaker \
 		$< \
 		--output=$@ \
 		--config=$(word 2,$^) \
 		--process=$(word 3,$^)
+
+	rm -r coastline
 
 .PHONY: mbtiles
 mbtiles: build/$(NAME)/tiles.mbtiles  ## Build vector tile file (.mbtiles).
@@ -148,6 +160,16 @@ build/$(NAME)/extract.osm.pbf: download/$(REGION_FILE)
 		--bbox $(EXTRACT_BBOX) \
 		--overwrite \
 		-o $@
+
+.PHONY: coastline
+coastline: build/coastline ## Extract coastline from OSM data.
+
+build/coastline: download/water-polygons-split-4326.zip
+	# The zipfile contains a top-level directory `water-polygons-split-4326`.
+	# We extract it to `build/water-polygons-split-4326`.
+	unzip -q $< -d $(@D)
+	# Then we rename it to `build/coastline`.
+	mv $(@D)/water-polygons-split-4326 $@
 
 .PHONY: sprites
 sprites: build/sprites  ## Build sprites (rendered icons).
@@ -205,8 +227,15 @@ build/$(NAME)/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
 .PHONY: download
 download: download/$(REGION_FILE) download/noto-sans.zip  ## Download OSM data and glyphs (fonts).
 
+# Download OSM region.
 download/$(REGION_FILE):
 	curl --create-dirs --fail "$(REGION_URL)" -o $@
+
+# Download OSM coastline.
+# https://osmdata.openstreetmap.de/data/water-polygons.html
+# License: https://osmdata.openstreetmap.de/info/license.html
+download/water-polygons-split-4326.zip:
+	curl --create-dirs --fail "https://osmdata.openstreetmap.de/download/water-polygons-split-4326.zip" -o $@
 
 download/noto-sans.zip:
 	# Archive containing the following directories:
@@ -223,7 +252,7 @@ clean-build:  ## Remove built/rendered files but keep OSM extracts. This exclude
 		sudo rm -rf private ; \
 	fi
 
-	rm -rf style.json build/glyphs build/sprites
+	rm -rf coastline style.json build/glyphs build/sprites
 
 	# https://unix.stackexchange.com/a/389706
 	# The command needs to be terminated with a ; for find to know where it ends
