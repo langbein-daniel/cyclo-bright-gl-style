@@ -117,16 +117,17 @@ data-tileserver-gl/.data-$(NAME): build/$(NAME)/tiles.mbtiles build/glyphs build
 .PHONY: tiles
 tiles: build/$(NAME)/tiles  ## Build (static) vector tiles.
 
-build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.json tilemaker/process-openmaptiles.lua build/coastline
+build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.json tilemaker/process-openmaptiles.lua build/coastline build/landcover
 	# There is no commandline option to specify
-	# the path of `water_polygons.shp`.
-	# `tilemaker` searches for this file in the current
-	# working directory at `coastline/water_polygons.shp`.
+	# the path to the  `coastline` or `landcover` directories.
+	# Instead, `tilemaker` searches for these in the current
+	# working directory.
 	# See https://github.com/systemed/tilemaker#out-of-the-box-setup
 	#
-	# Therefore, we create a symlink from coastline to build/coastline
-	# and remove it afterwards again.
+	# Therefore, we create temporary symlinks from coastline and landcover
+	# to build/coastline and build/landcover.
 	ln -f -s $(word 4,$^) coastline
+	ln -f -s $(word 5,$^) landcover
 
 	tilemaker \
 		$< \
@@ -134,7 +135,7 @@ build/$(NAME)/tiles: build/$(NAME)/extract.osm.pbf build/$(NAME)/config-static.j
 		--config=$(word 2,$^) \
 		--process=$(word 3,$^)
 
-	rm -r coastline
+	rm -r coastline landcover
 
 .PHONY: mbtiles
 mbtiles: build/$(NAME)/tiles.mbtiles  ## Build vector tile file (.mbtiles).
@@ -161,15 +162,27 @@ build/$(NAME)/extract.osm.pbf: download/$(REGION_FILE)
 		--overwrite \
 		-o $@
 
-.PHONY: coastline
-coastline: build/coastline ## Extract coastline from OSM data.
-
 build/coastline: download/water-polygons-split-4326.zip
 	# The zipfile contains a top-level directory `water-polygons-split-4326`.
 	# We extract it to `build/water-polygons-split-4326`.
 	unzip -q $< -d $(@D)
 	# Then we rename it to `build/coastline`.
 	mv $(@D)/water-polygons-split-4326 $@
+
+.PHONY: build/landcover
+build/landcover: build/landcover/ne_10m_urban_areas build/landcover/ne_10m_antarctic_ice_shelves_polys build/landcover/ne_10m_glaciated_areas
+
+build/landcover/ne_10m_urban_areas:	download/ne_10m_urban_areas.zip
+	mkdir -p $@
+	unzip -q $< -d $@
+
+build/landcover/ne_10m_antarctic_ice_shelves_polys:	download/ne_10m_antarctic_ice_shelves_polys.zip
+	mkdir -p $@
+	unzip -q $< -d $@
+
+build/landcover/ne_10m_glaciated_areas:	download/ne_10m_glaciated_areas.zip
+	mkdir -p $@
+	unzip -q $< -d $@
 
 .PHONY: sprites
 sprites: build/sprites  ## Build sprites (rendered icons).
@@ -225,7 +238,7 @@ build/$(NAME)/config-tileserver-gl.json: tilemaker/config-openmaptiles.json
 #
 
 .PHONY: download
-download: download/$(REGION_FILE) download/noto-sans.zip  ## Download OSM data and glyphs (fonts).
+download: download/$(REGION_FILE) download/water-polygons-split-4326.zip download/ne_10m_urban_areas.zip download/ne_10m_antarctic_ice_shelves_polys.zip download/ne_10m_glaciated_areas.zip download/noto-sans.zip  ## Download OSM data, Natural Earth data and glyphs (fonts).
 
 # Download OSM region.
 download/$(REGION_FILE):
@@ -233,14 +246,41 @@ download/$(REGION_FILE):
 
 # Download OSM coastline.
 # https://osmdata.openstreetmap.de/data/water-polygons.html
-# License: https://osmdata.openstreetmap.de/info/license.html
+# License: Open Database License (ODbL), https://osmdata.openstreetmap.de/info/license.html
 download/water-polygons-split-4326.zip:
 	curl --create-dirs --fail "https://osmdata.openstreetmap.de/download/water-polygons-split-4326.zip" -o $@
 
+# License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
+download/ne_10m_urban_areas.zip:
+	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_urban_areas.zip" -o $@
+
+# License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
+download/ne_10m_antarctic_ice_shelves_polys.zip:
+	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_antarctic_ice_shelves_polys.zip" -o $@
+
+# License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
+download/ne_10m_glaciated_areas.zip:
+	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_glaciated_areas.zip" -o $@
+
+# License: All fonts are either licensed under OFL or Apache, https://github.com/openmaptiles/fonts/#font-license
+# Currently, the cyclo bright style uses only the Noto font family which is licensed as OFL.
+#
+# TODO:
+#   The README mentions
+#     Noto Sans (patched by Klokan Technologies)
+#   Which is probably this repo: https://github.com/klokantech/klokantech-gl-fonts
+#   which says that
+#     you must keep the name of the font as it is in this repository - to credit KlokanTech
+#   And they are named as e.g.
+#     KlokanTech Noto Sans Bold
+#   Their README links to
+#     https://www.google.com/get/noto/
+#   which says
+#     All Noto fonts are licensed under the Open Font License (OFL).
 download/noto-sans.zip:
 	# Archive containing the following directories:
 	#  'Noto Sans Bold'  'Noto Sans Italic'  'Noto Sans Regular'
-	curl -L --create-dirs --fail https://github.com/openmaptiles/fonts/releases/download/v2.0/noto-sans.zip -o $@
+	curl -L --create-dirs --fail "https://github.com/openmaptiles/fonts/releases/download/v2.0/noto-sans.zip" -o $@
 
 #
 # CLEANUP
@@ -252,7 +292,7 @@ clean-build:  ## Remove built/rendered files but keep OSM extracts. This exclude
 		sudo rm -rf private ; \
 	fi
 
-	rm -rf coastline style.json build/glyphs build/sprites
+	rm -rf coastline landcover style.json build/glyphs build/sprites
 
 	# https://unix.stackexchange.com/a/389706
 	# The command needs to be terminated with a ; for find to know where it ends
