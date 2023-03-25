@@ -57,7 +57,7 @@ make \
   start-tileserver-gl
 ```
 
-Visit https://localhost
+Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
 
 ```shell
 # Static vector tiles
@@ -71,7 +71,7 @@ make \
   start-static-tileserver
 ```
 
-Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
+Visit https://localhost
 
 ### Example for Finnland
 
@@ -87,7 +87,7 @@ make \
   start-tileserver-gl
 ```
 
-Visit https://localhost
+Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
 
 ```shell
 # Static vector tiles
@@ -101,7 +101,7 @@ make \
   start-static-tileserver
 ```
 
-Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
+Visit https://localhost
 
 ## Edit the Style
 
