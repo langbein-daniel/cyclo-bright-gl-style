@@ -43,7 +43,7 @@ make stop
 
 To create the tiles for a different region, one can either adjust the variables at the head of the [Makefile](Makefile) or override them as shown in the following.
 
-Example for the city Oulu, Finnland:
+### Example for the city Oulu, Finnland
 
 ```shell
 # Vector and raster tiles
@@ -68,6 +68,36 @@ make \
   MAX_LON=26.61 \
   MIN_LAT=64.71 \
   MAX_LAT=65.38 \
+  start-static-tileserver
+```
+
+Visit https://localhost/styles/bicycle/#12.1/65.01029/25.47406
+
+### Example for Finnland
+
+```shell
+# Vector and raster tiles
+make \
+  NAME=finland \
+  REGION_URL='https://download.geofabrik.de/europe/finland-latest.osm.pbf' \
+  MIN_LON=18.77 \
+  MAX_LON=32.0 \
+  MIN_LAT=59.32 \
+  MAX_LAT=70.27 \
+  start-tileserver-gl
+```
+
+Visit https://localhost
+
+```shell
+# Static vector tiles
+make \
+  NAME=finland \
+  REGION_URL='https://download.geofabrik.de/europe/finland-latest.osm.pbf' \
+  MIN_LON=18.77 \
+  MAX_LON=32.0 \
+  MIN_LAT=59.32 \
+  MAX_LAT=70.27 \
   start-static-tileserver
 ```
 
