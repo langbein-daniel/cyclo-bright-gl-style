@@ -242,25 +242,25 @@ download: download/$(REGION_FILE) download/water-polygons-split-4326.zip downloa
 
 # Download OSM region.
 download/$(REGION_FILE):
-	curl --create-dirs --fail "$(REGION_URL)" -o $@
+	curl -L --create-dirs --fail "$(REGION_URL)" -o $@
 
 # Download OSM coastline.
 # https://osmdata.openstreetmap.de/data/water-polygons.html
 # License: Open Database License (ODbL), https://osmdata.openstreetmap.de/info/license.html
 download/water-polygons-split-4326.zip:
-	curl --create-dirs --fail "https://osmdata.openstreetmap.de/download/water-polygons-split-4326.zip" -o $@
+	curl -L --create-dirs --fail "https://osmdata.openstreetmap.de/download/water-polygons-split-4326.zip" -o $@
 
 # License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
 download/ne_10m_urban_areas.zip:
-	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_urban_areas.zip" -o $@
+	curl -L --create-dirs --fail "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_urban_areas.zip" -o $@
 
 # License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
 download/ne_10m_antarctic_ice_shelves_polys.zip:
-	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_antarctic_ice_shelves_polys.zip" -o $@
+	curl -L --create-dirs --fail "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_antarctic_ice_shelves_polys.zip" -o $@
 
 # License: Public Domain, https://www.naturalearthdata.com/about/terms-of-use/
 download/ne_10m_glaciated_areas.zip:
-	curl --create-dirs --fail -L "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_glaciated_areas.zip" -o $@
+	curl -L --create-dirs --fail "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_glaciated_areas.zip" -o $@
 
 # License: All fonts are either licensed under OFL or Apache, https://github.com/openmaptiles/fonts/#font-license
 # Currently, the cyclo bright style uses only the Noto font family which is licensed as OFL.
