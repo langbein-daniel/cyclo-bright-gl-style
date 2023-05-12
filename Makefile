@@ -311,7 +311,7 @@ clean-data:  ## Remove web-/tileserver data.
 	rm -rf data-static data-tileserver-gl
 
 .PHONY: clean-download
-clean-download: ## Remove downloaded files.
+clean-download:  ## Remove downloaded files.
 	rm -rf download
 
 .PHONY: clean
